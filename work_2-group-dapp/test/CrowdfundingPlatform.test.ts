@@ -207,26 +207,38 @@ describe("CrowdfundingPlatform", function () {
         platform.connect(contributor).donate(campaignId, { value: ONE_ETH }),
       ).to.be.revertedWith("Campaign is cancelled");
     });
+
+    it("rejects donations after funds have been claimed", async function () {
+      const { platform, creator, contributor, otherContributor, campaignId } =
+        await networkHelpers.loadFixture(deployWithCampaignFixture);
+
+      await platform.connect(contributor).donate(campaignId, { value: TARGET });
+      await platform.connect(creator).claimFunds(campaignId);
+
+      await expect(
+        platform.connect(otherContributor).donate(campaignId, { value: ONE_ETH }),
+      ).to.be.revertedWith("Funds already claimed");
+    });
   });
 
   describe("Fund claims", function () {
-    it("rejects creator fund claims before the deadline", async function () {
+    it("allows the creator to claim funds as soon as the target is reached", async function () {
       const { platform, creator, contributor, campaignId } =
         await networkHelpers.loadFixture(deployWithCampaignFixture);
       await platform.connect(contributor).donate(campaignId, { value: TARGET });
 
-      await expect(platform.connect(creator).claimFunds(campaignId)).to.be.revertedWith(
-        "Campaign deadline has not passed",
-      );
+      await expect(platform.connect(creator).claimFunds(campaignId))
+        .to.emit(platform, "FundsClaimed")
+        .withArgs(campaignId, creator.address, TARGET);
+
+      expect((await platform.getCampaign(campaignId)).fundsClaimed).to.equal(true);
+      expect(await platform.getCampaignStatus(campaignId)).to.equal("Claimed");
     });
 
     it("allows the creator to claim funds after a successful campaign", async function () {
       const { platform, creator, contributor, campaignId } =
         await networkHelpers.loadFixture(deployWithCampaignFixture);
       await platform.connect(contributor).donate(campaignId, { value: TARGET });
-      const campaign = await platform.getCampaign(campaignId);
-      await networkHelpers.time.increaseTo(campaign.deadline);
-
       await expect(platform.connect(creator).claimFunds(campaignId))
         .to.emit(platform, "FundsClaimed")
         .withArgs(campaignId, creator.address, TARGET);
@@ -240,8 +252,6 @@ describe("CrowdfundingPlatform", function () {
       const { platform, creator, contributor, campaignId } =
         await networkHelpers.loadFixture(deployWithCampaignFixture);
       await platform.connect(contributor).donate(campaignId, { value: TARGET });
-      const campaign = await platform.getCampaign(campaignId);
-      await networkHelpers.time.increaseTo(campaign.deadline);
       await platform.connect(creator).claimFunds(campaignId);
 
       await expect(platform.connect(creator).claimFunds(campaignId)).to.be.revertedWith(
@@ -253,9 +263,6 @@ describe("CrowdfundingPlatform", function () {
       const { platform, contributor, stranger, campaignId } =
         await networkHelpers.loadFixture(deployWithCampaignFixture);
       await platform.connect(contributor).donate(campaignId, { value: TARGET });
-      const campaign = await platform.getCampaign(campaignId);
-      await networkHelpers.time.increaseTo(campaign.deadline);
-
       await expect(platform.connect(stranger).claimFunds(campaignId)).to.be.revertedWith(
         "Only creator can claim funds",
       );

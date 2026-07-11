@@ -147,6 +147,7 @@ contract CrowdfundingPlatform is AccessControl, Pausable, ReentrancyGuard {
         Campaign storage campaign = campaigns[campaignId];
 
         require(!campaign.cancelled, "Campaign is cancelled");
+        require(!campaign.fundsClaimed, "Funds already claimed");
         require(block.timestamp < campaign.deadline, "Campaign deadline has passed");
         require(msg.value > 0, "Donation must be greater than zero");
 
@@ -167,7 +168,6 @@ contract CrowdfundingPlatform is AccessControl, Pausable, ReentrancyGuard {
         require(msg.sender == campaign.creator, "Only creator can claim funds");
         require(!campaign.cancelled, "Campaign is cancelled");
         require(!campaign.fundsClaimed, "Funds already claimed");
-        require(isCampaignExpired(campaignId), "Campaign deadline has not passed");
         require(isCampaignSuccessful(campaignId), "Funding target not reached");
 
         uint256 amount = campaign.amountRaised;
@@ -257,12 +257,12 @@ contract CrowdfundingPlatform is AccessControl, Pausable, ReentrancyGuard {
             return "Claimed";
         }
 
-        if (!isCampaignExpired(campaignId)) {
-            return "Active";
-        }
-
         if (isCampaignSuccessful(campaignId)) {
             return "Successful";
+        }
+
+        if (!isCampaignExpired(campaignId)) {
+            return "Active";
         }
 
         return "Failed";
