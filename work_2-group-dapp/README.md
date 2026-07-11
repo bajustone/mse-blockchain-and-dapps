@@ -23,6 +23,7 @@ Current Sepolia contract:
 - Campaign creators can cancel active campaigns.
 - Admin-controlled creator role management.
 - Live on-chain campaign/activity loading from contract events.
+- IPFS campaign metadata upload support through Pinata.
 - No mock/demo campaign data in the production UI.
 - Responsive SvelteKit dashboard with routed pages.
 
@@ -154,14 +155,19 @@ Campaign creation requires `CREATOR_ROLE`.
 
 To create a campaign:
 
+![Create campaign IPFS metadata upload](docs/screenshots/user-manual-ipfs-upload.png)
+
 1. Go to `/campaigns`.
 2. Click **Create Campaign**.
 3. Enter the campaign title, target ETH, duration, metadata URI, and description.
-4. Click **Create Campaign**.
-5. Confirm the transaction in MetaMask.
-6. Wait for confirmation, then refresh the campaign list if needed.
+4. Optional: choose a campaign image/document and click **Upload Metadata to IPFS**. This fills the Metadata URI field with an `ipfs://...` link.
+5. Click **Create Campaign**.
+6. Confirm the transaction in MetaMask.
+7. Wait for confirmation, then refresh the campaign list if needed.
 
 If the app says the wallet does not have creator role, ask the admin to grant creator access from `/roles`.
+
+If IPFS upload is not configured on the server, creators can still paste an existing `ipfs://...` URI manually into the Metadata URI field.
 
 ### 5. Manage creator roles
 
@@ -360,6 +366,30 @@ npm run frontend:test:e2e
 npm run frontend:build
 ```
 
+## IPFS metadata upload
+
+The campaign form supports uploading campaign metadata to IPFS through the SvelteKit server endpoint:
+
+```text
+POST /api/ipfs/upload
+```
+
+The endpoint uses Pinata and requires a server-side JWT:
+
+```bash
+PINATA_JWT="YOUR_PINATA_JWT"
+```
+
+When configured, the frontend can:
+
+1. Upload an optional campaign image/document to IPFS.
+2. Create a campaign metadata JSON object.
+3. Pin the metadata JSON to IPFS.
+4. Fill the campaign `metadataURI` field with the resulting `ipfs://...` URI.
+5. Store that URI on-chain when the campaign is created.
+
+If `PINATA_JWT` is not configured, users can still paste an existing `ipfs://...` URI manually.
+
 ## Docker production frontend
 
 Build and run the production frontend locally with Docker Compose:
@@ -391,7 +421,7 @@ Based on **“Deliverables (Applicable to All Groups)”** from `Activity 1#dApp
 | Responsive frontend integrated with MetaMask | ✅ Complete | SvelteKit frontend with wallet connect, network checks, and responsive routed dashboard. |
 | Evidence of RBAC implementation | ✅ Complete | OpenZeppelin `AccessControl`, `DEFAULT_ADMIN_ROLE`, `CREATOR_ROLE`, and `/roles` management page. |
 | Blockchain event logging | ✅ Complete | Contract emits campaign, donation, claim, refund, cancellation, and role events; `/activity` reads live events. |
-| IPFS integration, where applicable | ⚠️ Partial / metadata-ready | Campaigns include a `metadataURI` field for `ipfs://...` links, but the app does not yet upload files to IPFS directly. |
+| IPFS integration, where applicable | ✅ Complete when `PINATA_JWT` is configured | Campaign form supports direct IPFS metadata upload through Pinata and stores the resulting `ipfs://...` URI on-chain; manual `ipfs://...` entry remains available. |
 | NFT integration, where applicable | N/A | NFT functionality is not required for this crowdfunding DApp workflow. |
 | GitHub repository containing all source code | ✅ Complete | `git@github.com:bajustone/mse-blockchain-and-dapps.git`, project directory `work_2-group-dapp/`. |
 | System architecture diagram | ✅ Complete | Added Mermaid diagram in this README. |

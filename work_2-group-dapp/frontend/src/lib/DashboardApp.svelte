@@ -43,6 +43,8 @@
   let donateDialogOpen = false;
   let donateAmount = '0.1';
   let roleAddress = '';
+  let ipfsAsset: File | null = null;
+  let ipfsUploading = false;
   let roleStatus: { address: string; isAdmin: boolean; isCreator: boolean } | null = null;
 
   const emptyForm = () => ({
@@ -193,6 +195,36 @@
     }, action === 'grant' ? 'Creator role granted.' : 'Creator role revoked.');
   }
 
+  function handleIpfsAssetChange(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    ipfsAsset = input.files?.[0] ?? null;
+  }
+
+  async function uploadMetadataToIpfs() {
+    ipfsUploading = true;
+    statusMessage = 'Uploading campaign metadata to IPFS...';
+
+    try {
+      const body = new FormData();
+      body.set('title', form.title);
+      body.set('description', form.description);
+      body.set('targetEth', form.targetEth);
+      body.set('durationDays', form.durationDays);
+      if (ipfsAsset) body.set('asset', ipfsAsset);
+
+      const response = await fetch('/api/ipfs/upload', { method: 'POST', body });
+      const result = await response.json() as { metadataURI?: string; imageURI?: string; gatewayURL?: string; error?: string };
+      if (!response.ok || !result.metadataURI) throw new Error(result.error ?? 'IPFS upload failed.');
+
+      form.metadataURI = result.metadataURI;
+      statusMessage = `Metadata uploaded to IPFS: ${result.metadataURI}`;
+    } catch (error) {
+      statusMessage = error instanceof Error ? error.message : 'IPFS upload failed.';
+    } finally {
+      ipfsUploading = false;
+    }
+  }
+
   function openDonation(campaign: CampaignView) {
     selectedCampaign = campaign;
     donateAmount = '0.1';
@@ -294,6 +326,7 @@
   <form class="create-form" on:submit|preventDefault={() => runTask(async () => {
     await createCampaign(form.title, form.description, form.metadataURI, form.targetEth, form.durationDays);
     form = emptyForm();
+    ipfsAsset = null;
     createDialogOpen = false;
   }, 'Campaign created successfully.')}>
     <label>
@@ -316,6 +349,22 @@
       Description
       <Textarea bind:value={form.description} rows={3} placeholder="Describe the cause and how funds will be used." required />
     </label>
+
+    <div class="ipfs-panel wide">
+      <div>
+        <p class="eyebrow">IPFS metadata</p>
+        <strong>Upload campaign metadata to IPFS</strong>
+        <span>Optionally attach a campaign image or document. The generated <code>ipfs://</code> URI will be stored with the campaign.</span>
+      </div>
+      <label>
+        Campaign asset
+        <input class="file-input" type="file" accept="image/*,.pdf,.json,.txt" on:change={handleIpfsAssetChange} />
+      </label>
+      <Button variant="ghost" class="ghost-button" type="button" onclick={uploadMetadataToIpfs} disabled={ipfsUploading || !form.title || !form.description}>
+        {ipfsUploading ? 'Uploading...' : 'Upload Metadata to IPFS'}
+      </Button>
+    </div>
+
     <Button class="primary-button wide" type="submit" disabled={busy}>Create Campaign</Button>
   </form>
 

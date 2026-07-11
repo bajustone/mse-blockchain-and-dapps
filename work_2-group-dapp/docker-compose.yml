@@ -11,6 +11,7 @@ services:
       HOST: 0.0.0.0
       PORT: 3000
       ORIGIN: http://blockfund.bahatijustin.dev
+      PINATA_JWT: ${PINATA_JWT:-}
     ports:
       - "127.0.0.1:8088:3000"
     healthcheck:
