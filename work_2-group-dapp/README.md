@@ -108,6 +108,100 @@ flowchart TB
 - `/roles` — role management page
 - `/contract` — contract/network status
 
+## User manual for app users
+
+This section is for people using the deployed BlockFunds app, not developers setting it up locally.
+
+### 1. Open the app
+
+Visit:
+
+```text
+http://blockfund.bahatijustin.dev
+```
+
+The dashboard shows live Sepolia campaign totals, recent contract activity, and links to the main app pages.
+
+![BlockFunds dashboard](docs/screenshots/user-manual-dashboard.png)
+
+### 2. Connect MetaMask
+
+1. Install MetaMask if it is not already installed.
+2. Switch MetaMask to the **Sepolia** test network.
+3. Make sure the wallet has Sepolia ETH for gas fees.
+4. Click **Connect Wallet** in the top-right corner of the app.
+5. Approve the connection request in MetaMask.
+
+If MetaMask is on the wrong network, the app will ask you to switch networks before sending transactions.
+
+### 3. View and use campaigns
+
+Open `/campaigns` or click **Campaigns** in the sidebar.
+
+![Campaign management page](docs/screenshots/user-manual-campaigns.png)
+
+On the campaign page, users can:
+
+- View all recent live campaigns.
+- Donate ETH to active campaigns.
+- Claim funds if they are the creator and the target has been reached.
+- Claim refunds for failed or cancelled campaigns where they donated.
+- Cancel a campaign if they are the campaign creator.
+
+### 4. Create a campaign
+
+Campaign creation requires `CREATOR_ROLE`.
+
+To create a campaign:
+
+1. Go to `/campaigns`.
+2. Click **Create Campaign**.
+3. Enter the campaign title, target ETH, duration, metadata URI, and description.
+4. Click **Create Campaign**.
+5. Confirm the transaction in MetaMask.
+6. Wait for confirmation, then refresh the campaign list if needed.
+
+If the app says the wallet does not have creator role, ask the admin to grant creator access from `/roles`.
+
+### 5. Manage creator roles
+
+Open `/roles` or click **Roles** in the sidebar.
+
+![Role management page](docs/screenshots/user-manual-roles.png)
+
+On the role management page, users can:
+
+- Check the connected wallet roles.
+- Check any wallet address.
+- Grant creator role.
+- Revoke creator role.
+
+Only the admin wallet can grant or revoke creator roles. Non-admin users can still check role status, but grant/revoke transactions will fail.
+
+### 6. View blockchain activity
+
+Open `/activity` or click **Activity** in the sidebar.
+
+![Activity page](docs/screenshots/user-manual-activity.png)
+
+The Activity page reads live blockchain events from the deployed contract, including:
+
+- Campaign creation
+- Donations
+- Creator fund claims
+- Refunds
+- Campaign cancellations
+- Creator role grants/revokes
+
+### 7. Confirm transactions
+
+Every write action opens MetaMask for confirmation. After confirming:
+
+1. Wait for the transaction to be mined.
+2. Watch the status message in the app.
+3. Refresh campaigns/activity if the latest state is not visible immediately.
+4. Optionally verify the transaction on Sepolia Etherscan.
+
 ## Role management
 
 Campaign creation is protected by `CREATOR_ROLE`. A wallet must have creator role before it can create campaigns.
@@ -301,7 +395,7 @@ Based on **“Deliverables (Applicable to All Groups)”** from `Activity 1#dApp
 | NFT integration, where applicable | N/A | NFT functionality is not required for this crowdfunding DApp workflow. |
 | GitHub repository containing all source code | ✅ Complete | `git@github.com:bajustone/mse-blockchain-and-dapps.git`, project directory `work_2-group-dapp/`. |
 | System architecture diagram | ✅ Complete | Added Mermaid diagram in this README. |
-| User manual | ⚠️ Partial | README includes setup, routes, role management, and deployment usage. A separate end-user manual can still be prepared if required. |
+| User manual | ✅ Complete | README includes an app-user manual with screenshots for dashboard, campaigns, roles, and activity. |
 | Technical report, 15–20 pages | ⚠️ Pending | Source code and README are ready; formal report still needs to be written/exported. |
 | 15–20 minute live demonstration | ✅ Demo-ready | Full workflow is supported: connect wallet, grant creator role, create campaign, donate, claim funds, view events. |
 
