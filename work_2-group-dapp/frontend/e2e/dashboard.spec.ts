@@ -45,8 +45,7 @@ test.describe('BlockFunds dashboard', () => {
     await page.getByRole('dialog').getByRole('button', { name: 'Create Campaign' }).click();
     await expect(page.getByText('MetaMask or another EIP-1193 wallet is required.')).toBeVisible();
 
-    await page.getByLabel('Grant creator role').fill('0x0000000000000000000000000000000000000001');
-    await expect(page.getByRole('button', { name: 'Grant Role' })).toBeEnabled();
+    await expect(page.getByRole('link', { name: 'Open Role Management' })).toHaveAttribute('href', '/roles');
 
     expect(consoleErrors).toEqual([]);
   });
@@ -68,6 +67,13 @@ test.describe('BlockFunds dashboard', () => {
     await expect(page).toHaveURL(/\/activity$/);
     await expect(page.getByRole('heading', { name: 'Transactions' })).toBeVisible();
 
+    await page.getByRole('link', { name: /Roles/ }).click();
+    await expect(page).toHaveURL(/\/roles$/);
+    await expect(page.getByRole('heading', { name: 'Role Management' })).toBeVisible();
+    await page.getByLabel('Wallet address').fill('0x0000000000000000000000000000000000000001');
+    await expect(page.getByRole('button', { name: 'Grant Creator Role' })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Revoke Creator Role' })).toBeEnabled();
+
     await page.getByRole('link', { name: /Contract/ }).click();
     await expect(page).toHaveURL(/\/contract$/);
     await expect(page.getByText(/Contract/i).first()).toBeVisible();
@@ -82,6 +88,7 @@ test.describe('BlockFunds dashboard', () => {
 
     await expect(page.getByRole('link', { name: 'BlockFunds dashboard' })).toBeVisible();
     await expect(page.getByRole('link', { name: /Campaigns/ })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Roles/ })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Welcome, Group 8!' })).toBeVisible();
     await expect(page.getByText('No campaigns yet')).toBeVisible();
   });

@@ -367,8 +367,31 @@ export async function cancelCampaign(campaignId: bigint) {
   return tx.wait();
 }
 
+export async function getRoleStatus(address: string) {
+  await ensureExpectedNetwork();
+  const normalizedAddress = ethers.getAddress(address);
+  const contract = await getReadOnlyContract();
+  if (!contract) throw new Error('Contract is not configured.');
+
+  const [adminRole, creatorRole] = await Promise.all([
+    contract.DEFAULT_ADMIN_ROLE(),
+    contract.CREATOR_ROLE()
+  ]);
+  const [isAdmin, isCreator] = await Promise.all([
+    hasRole(contract, adminRole, normalizedAddress),
+    hasRole(contract, creatorRole, normalizedAddress)
+  ]);
+
+  return {
+    address: normalizedAddress,
+    isAdmin,
+    isCreator
+  };
+}
+
 export async function grantCreatorRole(address: string) {
   await ensureExpectedNetwork();
+  const normalizedAddress = ethers.getAddress(address);
   const contract = await getWritableContract();
   const adminRole = await contract.DEFAULT_ADMIN_ROLE();
   const signerAddress = await getSignerAddress(contract);
@@ -377,6 +400,21 @@ export async function grantCreatorRole(address: string) {
     throw new Error('Only the BlockFunds admin wallet can grant creator roles. Ask the admin to grant this address.');
   }
 
-  const tx = await contract.grantCreatorRole(address);
+  const tx = await contract.grantCreatorRole(normalizedAddress);
+  return tx.wait();
+}
+
+export async function revokeCreatorRole(address: string) {
+  await ensureExpectedNetwork();
+  const normalizedAddress = ethers.getAddress(address);
+  const contract = await getWritableContract();
+  const adminRole = await contract.DEFAULT_ADMIN_ROLE();
+  const signerAddress = await getSignerAddress(contract);
+
+  if (!(await hasRole(contract, adminRole, signerAddress))) {
+    throw new Error('Only the BlockFunds admin wallet can revoke creator roles.');
+  }
+
+  const tx = await contract.revokeCreatorRole(normalizedAddress);
   return tx.wait();
 }

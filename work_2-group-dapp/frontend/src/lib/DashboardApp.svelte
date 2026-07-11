@@ -19,14 +19,16 @@
     createCampaign,
     donateToCampaign,
     formatCurrencyEth,
+    getRoleStatus,
     grantCreatorRole,
     loadActivity,
     loadCampaigns,
+    revokeCreatorRole,
     shortAddress
   } from '$lib/contract';
   import type { CampaignView, TransactionItem } from '$lib/types';
 
-  export let page: 'dashboard' | 'campaigns' | 'activity' | 'contract' = 'dashboard';
+  export let page: 'dashboard' | 'campaigns' | 'activity' | 'roles' | 'contract' = 'dashboard';
 
   let campaigns: CampaignView[] = [];
   let transactions: TransactionItem[] = [];
@@ -40,7 +42,8 @@
   let createDialogOpen = false;
   let donateDialogOpen = false;
   let donateAmount = '0.1';
-  let creatorAddress = '';
+  let roleAddress = '';
+  let roleStatus: { address: string; isAdmin: boolean; isCreator: boolean } | null = null;
 
   const emptyForm = () => ({
     title: '',
@@ -65,6 +68,7 @@
     dashboard: 'Dashboard',
     campaigns: 'Campaigns',
     activity: 'Activity',
+    roles: 'Role Management',
     contract: 'Contract'
   }[page];
 
@@ -75,7 +79,7 @@
     const handleAccountsChanged = (accounts: unknown) => {
       const addresses = Array.isArray(accounts) ? accounts.map(String) : [];
       walletAddress = addresses[0] ?? '';
-      creatorAddress = walletAddress;
+      roleAddress = walletAddress;
     };
 
     const handleChainChanged = (chain: unknown) => {
@@ -100,7 +104,7 @@
       const addresses = Array.isArray(accounts) ? accounts.map(String) : [];
       if (addresses[0]) {
         walletAddress = addresses[0];
-        creatorAddress = addresses[0];
+        roleAddress = addresses[0];
       }
 
       const chain = await window.ethereum.request({ method: 'eth_chainId' });
@@ -152,7 +156,7 @@
       const wallet = await connectWallet();
       walletAddress = wallet.address;
       chainId = wallet.chainId.toString();
-      creatorAddress = wallet.address;
+      roleAddress = wallet.address;
       statusMessage = `Connected ${shortAddress(wallet.address)} on chain ${wallet.chainId}.`;
       await refreshCampaigns();
     } catch (error) {
@@ -160,6 +164,33 @@
     } finally {
       busy = false;
     }
+  }
+
+  async function checkRoles(address = roleAddress) {
+    if (!address) {
+      statusMessage = 'Enter a wallet address to check roles.';
+      return;
+    }
+
+    busy = true;
+    try {
+      roleStatus = await getRoleStatus(address);
+      roleAddress = roleStatus.address;
+      statusMessage = `${shortAddress(roleStatus.address)} is ${roleStatus.isAdmin ? 'an admin' : 'not an admin'} and ${roleStatus.isCreator ? 'has' : 'does not have'} creator role.`;
+    } catch (error) {
+      statusMessage = error instanceof Error ? error.message : 'Could not check roles.';
+    } finally {
+      busy = false;
+    }
+  }
+
+  async function manageCreatorRole(action: 'grant' | 'revoke') {
+    const address = roleAddress;
+    await runTask(async () => {
+      if (action === 'grant') await grantCreatorRole(address);
+      else await revokeCreatorRole(address);
+      roleStatus = await getRoleStatus(address);
+    }, action === 'grant' ? 'Creator role granted.' : 'Creator role revoked.');
   }
 
   function openDonation(campaign: CampaignView) {
@@ -290,15 +321,62 @@
 
   <Separator />
 
-  <div class="role-panel">
-    <label>
-      Grant creator role
-      <Input bind:value={creatorAddress} placeholder="0x..." />
-    </label>
-    <Button variant="ghost" class="ghost-button" onclick={() => runTask(() => grantCreatorRole(creatorAddress), 'Creator role granted.')} disabled={busy || !creatorAddress}>Grant Role</Button>
-  </div>
+  <p class="form-status" role="status">
+    Need to authorize another creator? <a class="inline-link" href="/roles">Open Role Management</a>.
+    {statusMessage}
+  </p>
+{/snippet}
 
-  <p class="form-status" role="status">{statusMessage}</p>
+{#snippet roleManagementPanel()}
+  <section class="statistics-card page-card role-page">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Admin tools</p>
+        <h1>Role Management</h1>
+      </div>
+      <Button variant="ghost" class="ghost-button" onclick={() => checkRoles()} disabled={busy || !roleAddress}>Check Roles</Button>
+    </div>
+
+    <div class="role-grid">
+      <Card.Root class="role-card">
+        <p class="eyebrow">Connected wallet</p>
+        <h3>{walletAddress ? shortAddress(walletAddress) : 'Wallet not connected'}</h3>
+        <p>Only the contract admin can grant or revoke creator access.</p>
+        <div class="role-actions">
+          <Button class="primary-button" onclick={connect} disabled={busy}>{walletAddress ? 'Reconnect Wallet' : 'Connect Wallet'}</Button>
+          <Button variant="ghost" class="ghost-button" onclick={() => walletAddress && checkRoles(walletAddress)} disabled={busy || !walletAddress}>Check My Roles</Button>
+        </div>
+      </Card.Root>
+
+      <Card.Root class="role-card">
+        <p class="eyebrow">Role lookup</p>
+        <h3>Check any wallet</h3>
+        <label>
+          Wallet address
+          <Input bind:value={roleAddress} placeholder="0x..." />
+        </label>
+        <div class="role-actions">
+          <Button variant="ghost" class="ghost-button" onclick={() => checkRoles()} disabled={busy || !roleAddress}>Check Roles</Button>
+          <Button class="primary-button" onclick={() => manageCreatorRole('grant')} disabled={busy || !roleAddress}>Grant Creator Role</Button>
+          <Button variant="ghost" class="ghost-button danger-button" onclick={() => manageCreatorRole('revoke')} disabled={busy || !roleAddress}>Revoke Creator Role</Button>
+        </div>
+      </Card.Root>
+    </div>
+
+    {#if roleStatus}
+      <Card.Root class="role-card role-result">
+        <p class="eyebrow">Current roles</p>
+        <h3>{shortAddress(roleStatus.address)}</h3>
+        <p class="full-address">{roleStatus.address}</p>
+        <div class="role-badges">
+          <Badge class={roleStatus.isAdmin ? 'status successful' : 'status'}>{roleStatus.isAdmin ? 'Admin' : 'Not admin'}</Badge>
+          <Badge class={roleStatus.isCreator ? 'status successful' : 'status'}>{roleStatus.isCreator ? 'Creator' : 'Not creator'}</Badge>
+        </div>
+      </Card.Root>
+    {/if}
+
+    <p class="form-status" role="status">{statusMessage}</p>
+  </section>
 {/snippet}
 
 <main class="page-shell">
@@ -313,6 +391,7 @@
         <a class:active={page === 'dashboard'} class="nav-item" href="/"><span>▦</span> Dashboard</a>
         <a class:active={page === 'campaigns'} class="nav-item" href="/campaigns"><span>◉</span> Campaigns</a>
         <a class:active={page === 'activity'} class="nav-item" href="/activity"><span>↔</span> Activity</a>
+        <a class:active={page === 'roles'} class="nav-item" href="/roles"><span>◇</span> Roles</a>
         <a class:active={page === 'contract'} class="nav-item" href="/contract"><span>◈</span> Contract</a>
       </nav>
 
@@ -413,6 +492,8 @@
         <section class="page-card activity-page">
           {@render transactionsPanel()}
         </section>
+      {:else if page === 'roles'}
+        {@render roleManagementPanel()}
       {:else if page === 'contract'}
         <section class="contract-page-grid">
           {@render contractPanel()}

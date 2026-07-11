@@ -131,7 +131,9 @@ label {
 .campaign-actions,
 .transactions-header,
 .transaction-card,
-.role-panel {
+.role-panel,
+.role-actions,
+.role-badges {
   display: flex;
   align-items: center;
 }
@@ -297,6 +299,19 @@ label {
   color: white;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--line);
+}
+
+.danger-button {
+  color: #ffd9dc;
+  border-color: rgba(255, 109, 118, 0.48);
+  background: rgba(255, 109, 118, 0.08);
+}
+
+.inline-link {
+  color: #b9c3ff;
+  font-weight: 850;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .content-grid {
@@ -713,6 +728,43 @@ h3 {
   flex: 1;
 }
 
+.role-page {
+  min-height: min(760px, calc(100vh - 160px));
+}
+
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.role-card {
+  padding: clamp(22px, 3vw, 32px);
+  background: rgba(8, 10, 18, 0.64);
+  border: 1px solid var(--line);
+  border-radius: 26px;
+}
+
+.role-card p:not(.eyebrow) {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.role-actions,
+.role-badges {
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.role-result {
+  margin-top: 22px;
+}
+
+.full-address {
+  overflow-wrap: anywhere;
+}
+
 .form-status {
   margin: 20px 0 0;
   color: var(--muted);
@@ -825,7 +877,8 @@ h3 {
   .summary-grid,
   .campaign-list,
   .create-form,
-  .contract-page-grid {
+  .contract-page-grid,
+  .role-grid {
     grid-template-columns: 1fr;
   }
 
@@ -855,7 +908,8 @@ h3 {
 
   .actions,
   .campaign-actions,
-  .transaction-card {
+  .transaction-card,
+  .role-actions {
     align-items: stretch;
     flex-direction: column;
   }
