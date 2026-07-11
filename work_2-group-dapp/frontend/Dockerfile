@@ -14,7 +14,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
-ENV ORIGIN=http://blockfund.loyalbook.net
+ENV ORIGIN=http://blockfund.bahatijustin.dev
 
 COPY package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
