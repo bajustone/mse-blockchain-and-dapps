@@ -16,6 +16,7 @@ const artifact = JSON.parse(readFileSync(artifactPath, "utf8")) as {
 
 const address = process.env.CONTRACT_ADDRESS ?? null;
 const network = process.env.CONTRACT_NETWORK ?? null;
+const fromBlock = process.env.CONTRACT_FROM_BLOCK ? Number(process.env.CONTRACT_FROM_BLOCK) : null;
 
 const frontendContractPath = join(
   process.cwd(),
@@ -44,6 +45,7 @@ writeFileSync(
       contractName: "CrowdfundingPlatform",
       address,
       network,
+      ...(fromBlock !== null && Number.isFinite(fromBlock) ? { fromBlock } : {}),
     },
     null,
     2,

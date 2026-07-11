@@ -18,6 +18,7 @@ function expectedNetworkLabel() {
 
 export const CONTRACT_ADDRESS = deployment.address ?? '';
 export const CONTRACT_NETWORK = deployment.network ?? 'localhost';
+export const CONTRACT_START_BLOCK = Number((deployment as { fromBlock?: number }).fromBlock ?? 0);
 export const CONTRACT_ABI = artifact.abi;
 
 export function hasContractAddress() {
@@ -184,8 +185,8 @@ function eventAmount(value: unknown, positive: boolean) {
   return `${positive ? '+' : '-'}${formatCurrencyEth(value)}`;
 }
 
-function eventName(event: ChainEvent) {
-  return event.eventName ?? 'Contract Event';
+function eventName(event: ChainEvent & { fragment?: { name?: string } }) {
+  return event.eventName ?? event.fragment?.name ?? 'Contract Event';
 }
 
 function eventArg(event: ChainEvent, index: number) {
@@ -220,7 +221,7 @@ export async function loadActivity(limit = 20): Promise<TransactionItem[]> {
       const filterFactory = queryable.filters[name];
       if (!filterFactory) return [];
       try {
-        return await queryable.queryFilter(filterFactory(), 0, 'latest');
+        return await queryable.queryFilter(filterFactory(), CONTRACT_START_BLOCK, 'latest');
       } catch {
         return [];
       }

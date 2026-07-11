@@ -82,14 +82,6 @@
     }
   ];
 
-  const demoTransactions: TransactionItem[] = [
-    { type: 'Donation', name: 'Henry Adams', date: 'Sep 08 2024', amount: '+0.790 ETH', positive: true, tone: 'green' },
-    { type: 'Required Fund', name: 'Ava Scott', date: 'Sep 08 2024', amount: '+0.420 ETH', positive: true, tone: 'dark' },
-    { type: 'Refund', name: 'Isabella Ward', date: 'Sep 07 2024', amount: '-1.740 ETH', positive: false, tone: 'purple' },
-    { type: 'Campaign Fund', name: 'Lucas Evans', date: 'Sep 06 2024', amount: '-1.810 ETH', positive: false, tone: 'blue' },
-    { type: 'Donation', name: 'Grace Morgan', date: 'Sep 04 2024', amount: '+2.300 ETH', positive: true, tone: 'dark' }
-  ];
-
   let campaigns: CampaignView[] = [];
   let transactions: TransactionItem[] = [];
   let usingDemoData = true;
@@ -113,7 +105,7 @@
   };
 
   $: visibleCampaigns = campaigns.length > 0 ? campaigns : demoCampaigns;
-  $: visibleTransactions = transactions.length > 0 ? transactions : usingDemoData ? demoTransactions : [];
+  $: visibleTransactions = transactions;
   $: totalRaised = visibleCampaigns.reduce((sum, campaign) => sum + campaign.amountRaised, 0n);
   $: totalTarget = visibleCampaigns.reduce((sum, campaign) => sum + campaign.targetAmount, 0n);
   $: activeCampaigns = visibleCampaigns.filter((campaign) => campaign.status === 'Active').length;
