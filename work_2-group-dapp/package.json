@@ -1,7 +1,7 @@
 {
-  "name": "group-8-crowdfunding-dapp-backend",
+  "name": "blockfunds-dapp-backend",
   "version": "1.0.0",
-  "description": "Hardhat backend for a Sepolia crowdfunding DApp.",
+  "description": "Hardhat backend for the BlockFunds Sepolia crowdfunding DApp.",
   "type": "module",
   "private": true,
   "scripts": {

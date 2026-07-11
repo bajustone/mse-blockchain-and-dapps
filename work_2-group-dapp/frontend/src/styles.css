@@ -636,6 +636,10 @@ h3 {
   border-radius: 26px;
 }
 
+.campaign-empty {
+  grid-column: 1 / -1;
+}
+
 .tx-amount {
   margin-left: auto;
   text-align: right;

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
-test.describe('FundMaaser dashboard', () => {
-  test('renders dashboard, demo data, and create form without console errors', async ({ page }, testInfo) => {
+test.describe('BlockFunds dashboard', () => {
+  test('renders dashboard, live empty states, and create form without console errors', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name !== 'chromium', 'Full create-form interaction is covered on desktop; mobile has a focused layout test.');
 
     const consoleErrors: string[] = [];
@@ -11,13 +11,15 @@ test.describe('FundMaaser dashboard', () => {
 
     await page.goto('/');
 
-    await expect(page).toHaveTitle('FundMaaser Dashboard');
+    await expect(page).toHaveTitle('BlockFunds Dashboard');
     await expect(page.getByRole('heading', { name: 'Welcome, Group 8!' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Campaigns', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Transactions', exact: true })).toBeVisible();
-    await expect(page.locator('.campaign-card')).toHaveCount(3);
-    await expect(page.getByText('Demo view')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Donate' }).first()).toBeDisabled();
+    await expect(page.getByText('Live Sepolia data')).toBeVisible();
+    await expect(page.getByText('No campaigns yet')).toBeVisible();
+    await expect(page.getByText('No contract activity yet')).toBeVisible();
+    await expect(page.getByText('Solar School Upgrade')).toHaveCount(0);
+    await expect(page.getByText('Henry Adams')).toHaveCount(0);
 
     const shellBackground = await page
       .locator('.page-shell')
@@ -78,9 +80,9 @@ test.describe('FundMaaser dashboard', () => {
   test('mobile layout keeps core navigation and campaign content accessible', async ({ page }) => {
     await page.goto('/');
 
-    await expect(page.getByRole('link', { name: 'FundMaaser dashboard' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'BlockFunds dashboard' })).toBeVisible();
     await expect(page.getByRole('link', { name: /Campaigns/ })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Welcome, Group 8!' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'Solar School Upgrade' })).toBeVisible();
+    await expect(page.getByText('No campaigns yet')).toBeVisible();
   });
 });

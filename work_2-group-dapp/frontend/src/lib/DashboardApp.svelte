@@ -28,66 +28,12 @@
 
   export let page: 'dashboard' | 'campaigns' | 'activity' | 'contract' = 'dashboard';
 
-  const demoCampaigns: CampaignView[] = [
-    {
-      id: 1n,
-      creator: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
-      title: 'Solar School Upgrade',
-      description: 'Fund solar panels and battery backup for a rural school classroom block.',
-      metadataURI: 'ipfs://solar-school',
-      targetAmount: 8_000_000_000_000_000_000n,
-      deadline: BigInt(Math.floor(Date.now() / 1000) + 86400 * 11),
-      amountRaised: 5_850_000_000_000_000_000n,
-      cancelled: false,
-      fundsClaimed: false,
-      status: 'Active',
-      progress: 73.12,
-      targetEth: '8 ETH',
-      raisedEth: '5.85 ETH',
-      deadlineLabel: 'Demo campaign'
-    },
-    {
-      id: 2n,
-      creator: '0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC',
-      title: 'Open Source Health Records',
-      description: 'Prototype a secure medical record sharing DApp for community clinics.',
-      metadataURI: 'ipfs://clinic-records',
-      targetAmount: 12_000_000_000_000_000_000n,
-      deadline: BigInt(Math.floor(Date.now() / 1000) + 86400 * 4),
-      amountRaised: 2_400_000_000_000_000_000n,
-      cancelled: false,
-      fundsClaimed: false,
-      status: 'Active',
-      progress: 20,
-      targetEth: '12 ETH',
-      raisedEth: '2.4 ETH',
-      deadlineLabel: 'Demo campaign'
-    },
-    {
-      id: 3n,
-      creator: '0x90F79bf6EB2c4f870365E785982E1f101E93b906',
-      title: 'Student Dev Lab',
-      description: 'Buy laptops, routers, and Ethereum test devices for a student blockchain lab.',
-      metadataURI: 'ipfs://student-dev-lab',
-      targetAmount: 6_500_000_000_000_000_000n,
-      deadline: BigInt(Math.floor(Date.now() / 1000) - 86400),
-      amountRaised: 6_900_000_000_000_000_000n,
-      cancelled: false,
-      fundsClaimed: false,
-      status: 'Successful',
-      progress: 100,
-      targetEth: '6.5 ETH',
-      raisedEth: '6.9 ETH',
-      deadlineLabel: 'Demo campaign'
-    }
-  ];
-
   let campaigns: CampaignView[] = [];
   let transactions: TransactionItem[] = [];
-  let usingDemoData = true;
+  let usingDemoData = false;
   let loading = true;
   let busy = false;
-  let statusMessage = 'Connect a wallet and start the local Hardhat chain to use live contract data.';
+  let statusMessage = 'Loading live contract data from Sepolia...';
   let walletAddress = '';
   let chainId = '';
   let selectedCampaign: CampaignView | null = null;
@@ -104,7 +50,7 @@
     durationDays: '7'
   };
 
-  $: visibleCampaigns = campaigns.length > 0 ? campaigns : demoCampaigns;
+  $: visibleCampaigns = campaigns;
   $: visibleTransactions = transactions;
   $: totalRaised = visibleCampaigns.reduce((sum, campaign) => sum + campaign.amountRaised, 0n);
   $: totalTarget = visibleCampaigns.reduce((sum, campaign) => sum + campaign.targetAmount, 0n);
@@ -182,17 +128,17 @@
       const [liveCampaigns, liveTransactions] = await Promise.all([loadCampaigns(8), loadActivity(20)]);
       campaigns = liveCampaigns;
       transactions = liveTransactions;
-      usingDemoData = liveCampaigns.length === 0;
+      usingDemoData = false;
       statusMessage = liveCampaigns.length
         ? `Loaded ${liveCampaigns.length} campaign${liveCampaigns.length === 1 ? '' : 's'} from ${CONTRACT_NETWORK}.`
-        : 'No live campaigns yet. Showing demo dashboard cards.';
+        : `No live campaigns found on ${CONTRACT_NETWORK}.`;
     } catch (error) {
-      usingDemoData = true;
+      usingDemoData = false;
       campaigns = [];
       transactions = [];
       statusMessage = error instanceof Error
         ? `Could not load live campaigns: ${error.message}`
-        : 'Could not load live campaigns. Showing demo data.';
+        : 'Could not load live campaigns.';
     } finally {
       loading = false;
     }
@@ -227,8 +173,8 @@
 </script>
 
 <svelte:head>
-  <title>FundMaaser {pageTitle}</title>
-  <meta name="description" content="SvelteKit dashboard for the Group 8 blockchain crowdfunding platform." />
+  <title>BlockFunds {pageTitle}</title>
+  <meta name="description" content="SvelteKit dashboard for the BlockFunds blockchain crowdfunding platform." />
 </svelte:head>
 
 {#snippet campaignCards()}
@@ -262,6 +208,13 @@
         </div>
       </Card.Root>
     {/each}
+
+    {#if visibleCampaigns.length === 0}
+      <article class="empty-state campaign-empty">
+        <strong>{loading ? 'Loading live campaigns...' : 'No campaigns yet'}</strong>
+        <span>{loading ? 'Reading campaign data from the deployed contract.' : 'Create the first campaign to populate this dashboard.'}</span>
+      </article>
+    {/if}
   </div>
 {/snippet}
 
@@ -348,9 +301,9 @@
 <main class="page-shell">
   <section class="dashboard-frame">
     <aside class="sidebar">
-      <a class="brand" href="/" aria-label="FundMaaser dashboard">
+      <a class="brand" href="/" aria-label="BlockFunds dashboard">
         <span class="brand-mark">✦</span>
-        <span>FundMaaser</span>
+        <span>BlockFunds</span>
       </a>
 
       <nav class="nav-list" aria-label="Dashboard navigation">
@@ -362,8 +315,8 @@
 
       <div class="profile-card">
         <div class="avatar">🧑🏽‍🚀</div>
-        <strong>{walletAddress ? shortAddress(walletAddress) : 'Daniel Lewis'}</strong>
-        <span>{walletAddress ? `Chain ${chainId}` : '@group8-dapp'}</span>
+        <strong>{walletAddress ? shortAddress(walletAddress) : 'BlockFunds'}</strong>
+        <span>{walletAddress ? `Chain ${chainId}` : '@blockfunds'}</span>
       </div>
     </aside>
 
@@ -391,8 +344,8 @@
                 <p class="eyebrow">Sepolia-ready crowdfunding</p>
                 <h1>Welcome, Group 8!</h1>
               </div>
-              <Badge class={`network-pill ${!usingDemoData ? 'live-pill' : ''}`}>
-                {usingDemoData ? 'Demo view' : 'Live local data'}
+              <Badge class="network-pill live-pill">
+                Live Sepolia data
               </Badge>
             </div>
 
