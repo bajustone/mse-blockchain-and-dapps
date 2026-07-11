@@ -58,37 +58,37 @@ docker-compose.yml                        Production frontend container config
 
 ```mermaid
 flowchart TB
-  User[User / Campaign Creator / Donor / Admin]
-  MetaMask[MetaMask Wallet]
-  Browser[Browser]
-  Frontend[SvelteKit Frontend\nBlockFunds Dashboard]
-  UI[shadcn-style Svelte UI Components]
-  ContractHelpers[frontend/src/lib/contract.ts\nethers v6 helpers]
-  Sepolia[(Sepolia Ethereum Testnet)]
-  Contract[CrowdfundingPlatform.sol\nOpenZeppelin AccessControl + Pausable]
-  Events[Contract Events\nCampaignCreated, DonationReceived,\nFundsClaimed, RefundClaimed,\nCampaignCancelled, Role Events]
-  Docker[Docker Compose\nblockfund-frontend]
-  Cloudflare[Cloudflare Tunnel]
-  PublicHost[blockfund.bahatijustin.dev]
-  DevTools[Hardhat 3 + Ignition\nTests + ABI Export]
-  GitHub[GitHub Repository]
+  user["User / Creator / Donor / Admin"]
+  browser["Browser"]
+  frontend["SvelteKit Frontend<br/>BlockFunds Dashboard"]
+  ui["Local shadcn-style Svelte Components"]
+  helpers["ethers v6 Contract Helpers<br/>frontend/src/lib/contract.ts"]
+  metamask["MetaMask Wallet"]
+  sepolia[("Sepolia Ethereum Testnet")]
+  contract["CrowdfundingPlatform.sol<br/>AccessControl + Pausable"]
+  events["Blockchain Events<br/>Campaign, Donation, Claim, Refund, Role"]
+  hardhat["Hardhat 3 + Ignition<br/>Tests + ABI Export"]
+  docker["Docker Compose<br/>blockfund-frontend"]
+  cloudflare["Cloudflare Tunnel"]
+  publicHost["blockfund.bahatijustin.dev"]
+  github["GitHub Repository"]
 
-  User --> Browser
-  Browser --> Frontend
-  Frontend --> UI
-  Frontend --> ContractHelpers
-  ContractHelpers --> MetaMask
-  MetaMask --> Sepolia
-  Sepolia --> Contract
-  Contract --> Events
-  Events --> ContractHelpers
-  DevTools --> Contract
-  DevTools --> Frontend
-  Frontend --> Docker
-  Docker --> Cloudflare
-  Cloudflare --> PublicHost
-  DevTools --> GitHub
-  Frontend --> GitHub
+  user --> browser
+  browser --> frontend
+  frontend --> ui
+  frontend --> helpers
+  helpers --> metamask
+  metamask --> sepolia
+  sepolia --> contract
+  contract --> events
+  events --> helpers
+  hardhat --> contract
+  hardhat --> frontend
+  frontend --> docker
+  docker --> cloudflare
+  cloudflare --> publicHost
+  hardhat --> github
+  frontend --> github
 ```
 
 ### Architecture flow
