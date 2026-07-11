@@ -1,0 +1,9 @@
+node_modules
+.svelte-kit
+build
+coverage
+playwright-report
+test-results
+.env
+.env.*
+.DS_Store

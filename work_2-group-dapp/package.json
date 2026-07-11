@@ -1,0 +1,34 @@
+{
+  "name": "group-8-crowdfunding-dapp-backend",
+  "version": "1.0.0",
+  "description": "Hardhat backend for a Sepolia crowdfunding DApp.",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "test:types": "tsc --noEmit",
+    "test:local:smoke": "tsx scripts/local-smoke-test.ts",
+    "test:local:fullstack": "bash scripts/test-local-fullstack.sh",
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:check": "npm --prefix frontend run check",
+    "frontend:build": "npm --prefix frontend run build",
+    "frontend:test:e2e": "npm --prefix frontend run test:e2e",
+    "node": "hardhat node",
+    "deploy:local": "hardhat ignition deploy ignition/modules/CrowdfundingPlatform.ts --network localhost",
+    "deploy:sepolia": "hardhat ignition deploy ignition/modules/CrowdfundingPlatform.ts --network sepolia",
+    "export:abi": "tsx scripts/export-abi.ts"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.0.0",
+    "ethers": "^6.17.0",
+    "hardhat": "^3.9.1",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.6.0"
+  }
+}
