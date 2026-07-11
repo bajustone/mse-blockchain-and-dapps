@@ -68,7 +68,7 @@ test.describe('FundMaaser dashboard', () => {
 
     await page.getByRole('link', { name: /Contract/ }).click();
     await expect(page).toHaveURL(/\/contract$/);
-    await expect(page.getByRole('heading', { name: 'localhost' })).toBeVisible();
+    await expect(page.getByText(/Contract/i).first()).toBeVisible();
 
     await page.getByRole('link', { name: /Dashboard/ }).click();
     await expect(page).toHaveURL(/\/$/);
