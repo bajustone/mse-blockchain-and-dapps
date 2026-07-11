@@ -41,7 +41,7 @@ test.describe('BlockFunds dashboard', () => {
 
     await expect(page.getByLabel('Campaign title')).toHaveValue('E2E Test Campaign');
     await expect(page.getByLabel('Target ETH')).toHaveValue('2.5');
-    await expect(page.getByRole('button', { name: 'Upload Metadata to IPFS' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Upload to IPFS' })).toBeVisible();
 
     await page.getByRole('dialog').getByRole('button', { name: 'Create Campaign' }).click();
     await expect(page.getByText('MetaMask or another EIP-1193 wallet is required.')).toBeVisible();

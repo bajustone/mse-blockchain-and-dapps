@@ -351,18 +351,20 @@
     </label>
 
     <div class="ipfs-panel wide">
-      <div>
+      <div class="ipfs-copy">
         <p class="eyebrow">IPFS metadata</p>
         <strong>Upload campaign metadata to IPFS</strong>
-        <span>Optionally attach a campaign image or document. The generated <code>ipfs://</code> URI will be stored with the campaign.</span>
+        <span>Attach an optional image or document. BlockFunds pins a JSON metadata file and fills the Metadata URI with the generated <code>ipfs://</code> link.</span>
       </div>
-      <label>
-        Campaign asset
-        <input class="file-input" type="file" accept="image/*,.pdf,.json,.txt" on:change={handleIpfsAssetChange} />
-      </label>
-      <Button variant="ghost" class="ghost-button" type="button" onclick={uploadMetadataToIpfs} disabled={ipfsUploading || !form.title || !form.description}>
-        {ipfsUploading ? 'Uploading...' : 'Upload Metadata to IPFS'}
-      </Button>
+      <div class="ipfs-actions">
+        <label>
+          Campaign asset
+          <input class="file-input" type="file" accept="image/*,.pdf,.json,.txt" on:change={handleIpfsAssetChange} />
+        </label>
+        <Button variant="ghost" class="ghost-button" type="button" onclick={uploadMetadataToIpfs} disabled={ipfsUploading || !form.title || !form.description}>
+          {ipfsUploading ? 'Uploading...' : 'Upload to IPFS'}
+        </Button>
+      </div>
     </div>
 
     <Button class="primary-button wide" type="submit" disabled={busy}>Create Campaign</Button>

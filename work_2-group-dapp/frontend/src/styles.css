@@ -734,32 +734,48 @@ h3 {
 
 .ipfs-panel {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.7fr) auto;
   gap: 16px;
-  align-items: end;
   padding: 18px;
-  border: 1px dashed rgba(185, 195, 255, 0.42);
+  border: 1px solid rgba(185, 195, 255, 0.28);
   border-radius: 22px;
-  background: rgba(80, 100, 255, 0.08);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(80, 100, 255, 0.22), transparent 14rem),
+    rgba(80, 100, 255, 0.08);
 }
 
-.ipfs-panel strong,
-.ipfs-panel span {
+.ipfs-copy strong,
+.ipfs-copy span {
   display: block;
 }
 
-.ipfs-panel span {
-  margin-top: 6px;
-  color: var(--muted);
-  line-height: 1.45;
+.ipfs-copy strong {
+  font-size: 1.05rem;
 }
 
-.ipfs-panel code {
+.ipfs-copy span {
+  margin-top: 6px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.ipfs-copy code {
   color: #cdd5ff;
+}
+
+.ipfs-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 14px;
 }
 
 .file-input {
   min-height: 50px;
+  color: var(--muted);
+}
+
+.create-dialog {
+  width: min(760px, calc(100vw - 32px));
 }
 
 .role-page {
@@ -840,6 +856,10 @@ h3 {
   line-height: 1.6;
 }
 
+.modal.create-dialog {
+  width: min(760px, calc(100vw - 32px));
+}
+
 .modal-close {
   position: absolute;
   top: 16px;
@@ -916,7 +936,7 @@ h3 {
   .create-form,
   .contract-page-grid,
   .role-grid,
-  .ipfs-panel {
+  .ipfs-actions {
     grid-template-columns: 1fr;
   }
 
