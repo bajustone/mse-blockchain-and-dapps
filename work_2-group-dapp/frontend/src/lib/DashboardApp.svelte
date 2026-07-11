@@ -42,13 +42,15 @@
   let donateAmount = '0.1';
   let creatorAddress = '';
 
-  let form = {
-    title: 'Community Solar Campaign',
-    description: 'Raise ETH transparently for verified community infrastructure.',
-    metadataURI: 'ipfs://campaign-metadata',
-    targetEth: '1',
+  const emptyForm = () => ({
+    title: '',
+    description: '',
+    metadataURI: '',
+    targetEth: '',
     durationDays: '7'
-  };
+  });
+
+  let form = emptyForm();
 
   $: visibleCampaigns = campaigns;
   $: visibleTransactions = transactions;
@@ -260,15 +262,16 @@
 {#snippet createForm()}
   <form class="create-form" on:submit|preventDefault={() => runTask(async () => {
     await createCampaign(form.title, form.description, form.metadataURI, form.targetEth, form.durationDays);
+    form = emptyForm();
     createDialogOpen = false;
   }, 'Campaign created successfully.')}>
     <label>
       Campaign title
-      <Input bind:value={form.title} required />
+      <Input bind:value={form.title} placeholder="e.g. Community Solar Campaign" required />
     </label>
     <label>
       Target ETH
-      <Input bind:value={form.targetEth} inputmode="decimal" required />
+      <Input bind:value={form.targetEth} inputmode="decimal" placeholder="e.g. 0.5" required />
     </label>
     <label>
       Duration days
@@ -276,11 +279,11 @@
     </label>
     <label>
       Metadata URI
-      <Input bind:value={form.metadataURI} />
+      <Input bind:value={form.metadataURI} placeholder="ipfs://... or https://..." />
     </label>
     <label class="wide">
       Description
-      <Textarea bind:value={form.description} rows={3} required />
+      <Textarea bind:value={form.description} rows={3} placeholder="Describe the cause and how funds will be used." required />
     </label>
     <Button class="primary-button wide" type="submit" disabled={busy}>Create Campaign</Button>
   </form>

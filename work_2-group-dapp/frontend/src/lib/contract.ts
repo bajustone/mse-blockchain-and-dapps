@@ -312,9 +312,27 @@ export async function loadActivity(limit = 20): Promise<TransactionItem[]> {
   );
 }
 
+async function getSignerAddress(contract: Contract) {
+  const runner = contract.runner as { getAddress?: () => Promise<string> } | null;
+  const address = await runner?.getAddress?.();
+  if (!address) throw new Error('Connected wallet address could not be resolved.');
+  return address;
+}
+
+async function hasRole(contract: Contract, role: string, address: string) {
+  return Boolean(await contract.hasRole(role, address));
+}
+
 export async function createCampaign(title: string, description: string, metadataURI: string, targetEth: string, durationDays: string) {
   await ensureExpectedNetwork();
   const contract = await getWritableContract();
+  const creatorRole = await contract.CREATOR_ROLE();
+  const signerAddress = await getSignerAddress(contract);
+
+  if (!(await hasRole(contract, creatorRole, signerAddress))) {
+    throw new Error('This wallet does not have the creator role. Ask the BlockFunds admin to grant creator role first.');
+  }
+
   const targetAmount = ethers.parseEther(targetEth || '0');
   const durationInDays = BigInt(durationDays || '0');
   const tx = await contract.createCampaign(title, description, metadataURI, targetAmount, durationInDays);
@@ -352,6 +370,13 @@ export async function cancelCampaign(campaignId: bigint) {
 export async function grantCreatorRole(address: string) {
   await ensureExpectedNetwork();
   const contract = await getWritableContract();
+  const adminRole = await contract.DEFAULT_ADMIN_ROLE();
+  const signerAddress = await getSignerAddress(contract);
+
+  if (!(await hasRole(contract, adminRole, signerAddress))) {
+    throw new Error('Only the BlockFunds admin wallet can grant creator roles. Ask the admin to grant this address.');
+  }
+
   const tx = await contract.grantCreatorRole(address);
   return tx.wait();
 }
