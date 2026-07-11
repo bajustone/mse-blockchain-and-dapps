@@ -47,12 +47,58 @@ scripts/export-abi.ts                     ABI/deployment export script
 scripts/test-local-fullstack.sh           Full local backend/frontend smoke test
 scripts/local-smoke-test.ts               Local contract interaction smoke test
 test/CrowdfundingPlatform.test.ts         Unit tests
-frontend/                                SvelteKit frontend app
+frontend/                                 SvelteKit frontend app
 frontend/src/lib/DashboardApp.svelte      Main routed dashboard UI
 frontend/src/lib/contract.ts              Frontend contract helpers
 frontend/src/routes/roles/+page.svelte    Role management route
 docker-compose.yml                        Production frontend container config
 ```
+
+## System architecture
+
+```mermaid
+flowchart TB
+  User[User / Campaign Creator / Donor / Admin]
+  MetaMask[MetaMask Wallet]
+  Browser[Browser]
+  Frontend[SvelteKit Frontend\nBlockFunds Dashboard]
+  UI[shadcn-style Svelte UI Components]
+  ContractHelpers[frontend/src/lib/contract.ts\nethers v6 helpers]
+  Sepolia[(Sepolia Ethereum Testnet)]
+  Contract[CrowdfundingPlatform.sol\nOpenZeppelin AccessControl + Pausable]
+  Events[Contract Events\nCampaignCreated, DonationReceived,\nFundsClaimed, RefundClaimed,\nCampaignCancelled, Role Events]
+  Docker[Docker Compose\nblockfund-frontend]
+  Cloudflare[Cloudflare Tunnel]
+  PublicHost[blockfund.bahatijustin.dev]
+  DevTools[Hardhat 3 + Ignition\nTests + ABI Export]
+  GitHub[GitHub Repository]
+
+  User --> Browser
+  Browser --> Frontend
+  Frontend --> UI
+  Frontend --> ContractHelpers
+  ContractHelpers --> MetaMask
+  MetaMask --> Sepolia
+  Sepolia --> Contract
+  Contract --> Events
+  Events --> ContractHelpers
+  DevTools --> Contract
+  DevTools --> Frontend
+  Frontend --> Docker
+  Docker --> Cloudflare
+  Cloudflare --> PublicHost
+  DevTools --> GitHub
+  Frontend --> GitHub
+```
+
+### Architecture flow
+
+1. Users interact with the SvelteKit dashboard in the browser.
+2. MetaMask signs transactions and connects the frontend to Sepolia.
+3. `frontend/src/lib/contract.ts` uses ethers v6 to read campaign data, send transactions, and query contract events.
+4. `CrowdfundingPlatform.sol` manages campaigns, donations, refunds, creator claims, cancellation, pause controls, and RBAC.
+5. Contract events populate the Activity page with live blockchain activity.
+6. The production frontend runs in Docker and is exposed publicly through Cloudflare Tunnel.
 
 ## Frontend routes
 
@@ -239,3 +285,24 @@ The deployed public hostname is served through Cloudflare Tunnel:
 ```text
 http://blockfund.bahatijustin.dev
 ```
+
+## Deliverables self-evaluation
+
+Based on **“Deliverables (Applicable to All Groups)”** from `Activity 1#dApp Projects_DEADLINE_11_07_2026.docx`:
+
+| Deliverable | Status | Evidence / Notes |
+| --- | --- | --- |
+| Deployed DApp on Sepolia Ethereum Test Network | ✅ Complete | Frontend: `http://blockfund.bahatijustin.dev`; contract: `0x265c7Ed47C7880f0f0ce2F1Ee44221a46031971f`. |
+| Solidity smart contract(s) | ✅ Complete | `contracts/CrowdfundingPlatform.sol`. |
+| Responsive frontend integrated with MetaMask | ✅ Complete | SvelteKit frontend with wallet connect, network checks, and responsive routed dashboard. |
+| Evidence of RBAC implementation | ✅ Complete | OpenZeppelin `AccessControl`, `DEFAULT_ADMIN_ROLE`, `CREATOR_ROLE`, and `/roles` management page. |
+| Blockchain event logging | ✅ Complete | Contract emits campaign, donation, claim, refund, cancellation, and role events; `/activity` reads live events. |
+| IPFS integration, where applicable | ⚠️ Partial / metadata-ready | Campaigns include a `metadataURI` field for `ipfs://...` links, but the app does not yet upload files to IPFS directly. |
+| NFT integration, where applicable | N/A | NFT functionality is not required for this crowdfunding DApp workflow. |
+| GitHub repository containing all source code | ✅ Complete | `git@github.com:bajustone/mse-blockchain-and-dapps.git`, project directory `work_2-group-dapp/`. |
+| System architecture diagram | ✅ Complete | Added Mermaid diagram in this README. |
+| User manual | ⚠️ Partial | README includes setup, routes, role management, and deployment usage. A separate end-user manual can still be prepared if required. |
+| Technical report, 15–20 pages | ⚠️ Pending | Source code and README are ready; formal report still needs to be written/exported. |
+| 15–20 minute live demonstration | ✅ Demo-ready | Full workflow is supported: connect wallet, grant creator role, create campaign, donate, claim funds, view events. |
+
+Overall readiness: **strong implementation readiness**, with the main remaining non-code deliverables being the formal technical report and, if required, a separate polished user manual.
